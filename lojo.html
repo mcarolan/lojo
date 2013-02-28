@@ -1,0 +1,133 @@
+  <html>
+  <head>
+    <script type="application/javascript">
+    var canvasContext;
+
+    var fred;
+
+    var blockWidth;
+    var blockHeight;
+
+    var arenaWidth = 30;
+    var arenaHeight = 30;
+
+    var borderSize = 20;
+
+    var north = { xOffset: 0, yOffset: -1 };
+    var south = { xOffset: 0, yOffset: 1 };
+    var east = { xOffset: 1, yOffset: 0 };
+    var west = { xOffset: -1, yOffset: 0 };
+
+    function getViewportSize()
+    {
+      var e = window
+      , a = 'inner';
+      if ( !( 'innerWidth' in window ) )
+      {
+        a = 'client';
+        e = document.documentElement || document.body;
+      }
+      return { width : e[ a+'Width' ] , height : e[ a+'Height' ] }
+    }
+
+    function toScreenX(lojoX) {
+      return blockWidth * lojoX;
+    }
+
+    function toScreenY(lojoY) {
+      return blockHeight * lojoY;
+    }
+
+    function turtle() {
+      this.x = arenaWidth / 2;
+      this.y = arenaHeight / 2;
+
+      console.log('starting position: ' + this.x + ', ' + this.y);
+
+      this.penDownX = this.x;
+      this.penDownY = this.y;
+
+      this.facing = north;
+      this.isPenDown = true;
+
+      this.drawTrail = function() {
+        canvasContext.strokeStyle = 'blue';
+        canvasContext.beginPath();
+        canvasContext.moveTo(toScreenX(this.x), toScreenY(this.y));
+        canvasContext.lineTo(toScreenX(this.penDownX), toScreenY(this.penDownY));
+        canvasContext.closePath();
+        canvasContext.stroke();
+      }
+
+      this.face = function(direction) {
+        console.log('face ' + direction);
+
+        this.facing = direction;
+      };
+
+      this.move = function() {
+        console.log('move');
+
+        this.x += this.facing.xOffset;
+        this.y += this.facing.yOffset;
+
+        console.log('position now ' + this.x + ', ' + this.y);
+
+        if (this.isPenDown) {
+          this.drawTrail();
+
+          this.penDownX = this.x;
+          this.penDownY = this.y;
+        }
+      };
+    }
+
+    function draw() {
+      var viewportSize = getViewportSize();
+      var canvas = document.getElementById('canvas');
+
+      //set the canvas to be the entire size of the viewport
+      var size = Math.min(viewportSize.width, viewportSize.height - borderSize);
+
+      canvas.width = size;
+      canvas.height = size;
+
+      canvas.style.position = 'fixed';
+      canvas.style.top = borderSize / 2;
+      canvas.style.left = (viewportSize.width - size) / 2;
+
+      //set the arena size
+      blockWidth = canvas.width / arenaWidth;
+      blockHeight = canvas.height / arenaHeight;
+
+      console.log('arena size is ' + arenaWidth + ', ' + arenaHeight);
+      console.log('block size is ' + blockWidth + ', ' + blockHeight);
+
+      fred = new turtle();
+
+      if (canvas.getContext) {
+        canvasContext = canvas.getContext("2d");
+
+        fred.move();
+        fred.move();
+        fred.move();
+        fred.move();
+
+        fred.face(east)
+
+        fred.move();
+        fred.move();
+        fred.move();
+        fred.move();
+        fred.move();
+        fred.move();
+        fred.move();
+        fred.move();
+      }
+    }
+    </script>
+  </head>
+  <body onload="draw();" style="background-color: #EEEEEE">
+   <canvas id="canvas" style="background-color: white; align: center"></canvas>
+ </body>
+ </html>

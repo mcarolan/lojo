@@ -18,6 +18,8 @@
     var east = { xOffset: 1, yOffset: 0 };
     var west = { xOffset: -1, yOffset: 0 };
 
+    var penColor = 'red';
+
     function getViewportSize()
     {
       var e = window
@@ -44,17 +46,14 @@
 
       console.log('starting position: ' + this.x + ', ' + this.y);
 
-      this.penDownX = this.x;
-      this.penDownY = this.y;
-
       this.facing = north;
       this.isPenDown = true;
 
-      this.drawTrail = function() {
-        canvasContext.strokeStyle = 'blue';
+      this.drawTrail = function(x1, y1, x2, y2) {
+        canvasContext.strokeStyle = penColor;
         canvasContext.beginPath();
-        canvasContext.moveTo(toScreenX(this.x), toScreenY(this.y));
-        canvasContext.lineTo(toScreenX(this.penDownX), toScreenY(this.penDownY));
+        canvasContext.moveTo(toScreenX(x1), toScreenY(y1));
+        canvasContext.lineTo(toScreenX(x2), toScreenY(y2));
         canvasContext.closePath();
         canvasContext.stroke();
       }
@@ -68,16 +67,16 @@
       this.move = function() {
         console.log('move');
 
+        var startX = this.x;
+        var startY = this.y;
+
         this.x += this.facing.xOffset;
         this.y += this.facing.yOffset;
 
         console.log('position now ' + this.x + ', ' + this.y);
 
         if (this.isPenDown) {
-          this.drawTrail();
-
-          this.penDownX = this.x;
-          this.penDownY = this.y;
+          this.drawTrail(startX, startY, this.x, this.y);
         }
       };
     }
@@ -107,22 +106,6 @@
 
       if (canvas.getContext) {
         canvasContext = canvas.getContext("2d");
-
-        fred.move();
-        fred.move();
-        fred.move();
-        fred.move();
-
-        fred.face(east)
-
-        fred.move();
-        fred.move();
-        fred.move();
-        fred.move();
-        fred.move();
-        fred.move();
-        fred.move();
-        fred.move();
       }
     }
     </script>

@@ -9,8 +9,8 @@
     var blockWidth;
     var blockHeight;
 
-    var arenaWidth = 30;
-    var arenaHeight = 30;
+    var arenaWidth = 15;
+    var arenaHeight = 15;
 
     var borderSize = 20;
 
@@ -142,11 +142,6 @@
       blockWidth = canvas.width / arenaWidth;
       blockHeight = canvas.height / arenaHeight;
 
-      console.log('arena size is ' + arenaWidth + ', ' + arenaHeight);
-      console.log('block size is ' + blockWidth + ', ' + blockHeight);
-
-      fred = new turtle();
-
       if (canvas.getContext) {
         canvasContext = canvas.getContext("2d");
       }
@@ -155,17 +150,17 @@
     <style type="text/css">
       .turtle {
         position: absolute;
-        width: 40px;
-        height: 29px;
-        z-index: 0;
+        width: 20px;
+        height: 15px;
+        z-index: 1;
       }
     </style>
   </head>
   <body onload="draw();">
     <div class="turtle template" style="display: none;">
-      <img src="turtle.png" style="width: 40px; height: 29px;" />
+      <img src="turtle.png" style="width: 20px; height: 15px;" />
     </div>
 
-   <canvas id="canvas" style="align: center; z-index: 1"></canvas>
+   <canvas id="canvas" style="align: center; z-index: 0"></canvas>
  </body>
  </html>

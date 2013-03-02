@@ -1,5 +1,6 @@
   <html>
   <head>
+    <script type="application/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="application/javascript">
     var canvasContext;
 
@@ -17,8 +18,6 @@
     var south = { xOffset: 0, yOffset: 1 };
     var east = { xOffset: 1, yOffset: 0 };
     var west = { xOffset: -1, yOffset: 0 };
-
-    var penColor = 'red';
 
     function getViewportSize()
     {
@@ -46,11 +45,19 @@
 
       console.log('starting position: ' + this.x + ', ' + this.y);
 
-      this.facing = north;
+      this.facing = east;
       this.isPenDown = true;
+      this.penColor = 'black';
+
+      //create dom element
+      this.turtle = $('.template').clone();
+      $(this.turtle).removeAttr('style');
+      $(this.turtle).appendTo('body');
+      $(this.turtle).removeClass('template');
+      $(this.turtle).css('background-color', 'green');
 
       this.drawTrail = function(x1, y1, x2, y2) {
-        canvasContext.strokeStyle = penColor;
+        canvasContext.strokeStyle = this.penColor;
         canvasContext.beginPath();
         canvasContext.moveTo(toScreenX(x1), toScreenY(y1));
         canvasContext.lineTo(toScreenX(x2), toScreenY(y2));
@@ -58,10 +65,40 @@
         canvasContext.stroke();
       }
 
+      this.setTurtlePosition = function () {
+        var width = $(this.turtle).width();
+        var height = $(this.turtle).height();
+
+        var canvasLeft = $('#canvas').offset().left;
+        var canvasTop = $('#canvas').offset().top;
+
+        $(this.turtle).offset({ top: toScreenY(this.y) - (height / 2) + canvasTop, left: toScreenX(this.x) - (width / 2) + canvasLeft});
+      };
+
+      this.setTurtleOrientation = function() {
+        if (this.facing == north) {
+          $(this.turtle).css('-webkit-transform', 'rotate(270deg)');
+        }
+        else if (this.facing == east) {
+          $(this.turtle).css('-webkit-transform', 'rotate(0deg)');
+        }
+        else if (this.facing == west) {
+          $(this.turtle).css('-webkit-transform', 'rotate(180deg)');
+        }
+        else if (this.facing == south) {
+          $(this.turtle).css('-webkit-transform', 'rotate(-270deg)');
+        }
+      };
+
+      //set initial turtle position and orientation
+      this.setTurtlePosition();
+      this.setTurtleOrientation();
+
       this.face = function(direction) {
         console.log('face ' + direction);
 
         this.facing = direction;
+        this.setTurtleOrientation();
       };
 
       this.move = function() {
@@ -78,6 +115,12 @@
         if (this.isPenDown) {
           this.drawTrail(startX, startY, this.x, this.y);
         }
+
+        this.setTurtlePosition();
+      };
+
+      this.changeColor = function(color) {
+        $(this.turtle).css('background-color', color);
       };
     }
 
@@ -109,8 +152,20 @@
       }
     }
     </script>
+    <style type="text/css">
+      .turtle {
+        position: absolute;
+        width: 40px;
+        height: 29px;
+        z-index: 0;
+      }
+    </style>
   </head>
-  <body onload="draw();" style="background-color: #EEEEEE">
-   <canvas id="canvas" style="background-color: white; align: center"></canvas>
+  <body onload="draw();">
+    <div class="turtle template" style="display: none;">
+      <img src="turtle.png" style="width: 40px; height: 29px;" />
+    </div>
+
+   <canvas id="canvas" style="align: center; z-index: 1"></canvas>
  </body>
  </html>

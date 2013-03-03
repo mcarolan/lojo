@@ -14,10 +14,15 @@
 
     var borderSize = 20;
 
-    var north = { xOffset: 0, yOffset: -1 };
-    var south = { xOffset: 0, yOffset: 1 };
-    var east = { xOffset: 1, yOffset: 0 };
-    var west = { xOffset: -1, yOffset: 0 };
+    var north = { xOffset: 0, yOffset: -1, rotation: 'rotate(270deg)' };
+    var south = { xOffset: 0, yOffset: 1, rotation: 'rotate(-270deg)' };
+    var east = { xOffset: 1, yOffset: 0, rotation: 'rotate(0deg)' };
+    var west = { xOffset: -1, yOffset: 0, rotation: 'rotate(180deg)' };
+
+    var instructionQueue = [];
+    var instructionDelay = 500;
+
+    var turtles = [];
 
     function getViewportSize()
     {
@@ -39,7 +44,21 @@
       return blockHeight * lojoY;
     }
 
+    function processInstruction() {
+      if (instructionQueue.length == 0) {
+        canvasContext.font = 'bold 18px sans-serif';
+        canvasContext.fillText('All instructions have been completed!', 0, borderSize);
+        return;
+      }
+
+      var instruction = instructionQueue.shift();
+      instruction();
+      setTimeout(processInstruction, instructionDelay);
+    }
+
     function turtle() {
+      turtles.push(this);
+
       this.x = arenaWidth / 2;
       this.y = arenaHeight / 2;
 
@@ -48,13 +67,6 @@
       this.facing = east;
       this.isPenDown = true;
       this.penColor = 'black';
-
-      //create dom element
-      this.turtle = $('.template').clone();
-      $(this.turtle).removeAttr('style');
-      $(this.turtle).appendTo('body');
-      $(this.turtle).removeClass('template');
-      $(this.turtle).css('background-color', 'green');
 
       this.drawTrail = function(x1, y1, x2, y2) {
         canvasContext.strokeStyle = this.penColor;
@@ -76,32 +88,27 @@
       };
 
       this.setTurtleOrientation = function() {
-        if (this.facing == north) {
-          $(this.turtle).css('-webkit-transform', 'rotate(270deg)');
-        }
-        else if (this.facing == east) {
-          $(this.turtle).css('-webkit-transform', 'rotate(0deg)');
-        }
-        else if (this.facing == west) {
-          $(this.turtle).css('-webkit-transform', 'rotate(180deg)');
-        }
-        else if (this.facing == south) {
-          $(this.turtle).css('-webkit-transform', 'rotate(-270deg)');
-        }
+        $(this.turtle).css('-webkit-transform', this.facing.rotation);
       };
 
-      //set initial turtle position and orientation
-      this.setTurtlePosition();
-      this.setTurtleOrientation();
-
       this.face = function(direction) {
+        var that = this;
+        instructionQueue.push(function() { that.doFace(direction) });
+      }
+
+      this.move = function() {
+        var that = this;
+        instructionQueue.push(function() { that.doMove() });
+      }
+
+      this.doFace = function(direction) {
         console.log('face ' + direction);
 
         this.facing = direction;
         this.setTurtleOrientation();
       };
 
-      this.move = function() {
+      this.doMove = function() {
         console.log('move');
 
         var startX = this.x;
@@ -145,8 +152,24 @@
       if (canvas.getContext) {
         canvasContext = canvas.getContext("2d");
       }
+
+      for (i in turtles) {
+        var turtle = turtles[i];
+
+        turtle.turtle = $('.template').clone();
+        $(turtle.turtle).removeAttr('style');
+        $(turtle.turtle).appendTo('body');
+        $(turtle.turtle).removeClass('template');
+        $(turtle.turtle).css('background-color', 'green');
+
+        turtle.setTurtlePosition();
+        turtle.setTurtleOrientation();
+      }
+
+      setTimeout(processInstruction, instructionDelay);
     }
     </script>
+    <script type="application/javascript" src="program.js"></script>
     <style type="text/css">
       .turtle {
         position: absolute;

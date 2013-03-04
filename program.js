@@ -1,16 +1,10 @@
 fred = new turtle();
+wilma = new turtle();
 
-function square() {
-	fred.move();
-	fred.face(north);
-	fred.move();
-	fred.face(west);
-	fred.move();
-	fred.face(south);
-	fred.move();
-	fred.face(east);	
-}
+fred.move();
 
-square();
-fred.face(south);
-square();
+fred.face(north);
+wilma.face(north);
+
+fred.move();
+wilma.move();

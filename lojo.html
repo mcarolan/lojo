@@ -19,10 +19,8 @@
     var east = { xOffset: 1, yOffset: 0, rotation: 'rotate(0deg)' };
     var west = { xOffset: -1, yOffset: 0, rotation: 'rotate(180deg)' };
 
-    var instructionQueue = [];
+    var instructionQueues = [];
     var instructionDelay = 500;
-
-    var turtles = [];
 
     function getViewportSize()
     {
@@ -45,20 +43,18 @@
     }
 
     function processInstruction() {
-      if (instructionQueue.length == 0) {
-        canvasContext.font = 'bold 18px sans-serif';
-        canvasContext.fillText('All instructions have been completed!', 0, borderSize);
-        return;
+      for (instructionQueue in instructionQueues) {
+        if (instructionQueues[instructionQueue].length == 0) {
+          continue;
+        }
+
+        instructionQueues[instructionQueue].shift()();
       }
 
-      var instruction = instructionQueue.shift();
-      instruction();
       setTimeout(processInstruction, instructionDelay);
     }
 
     function turtle() {
-      turtles.push(this);
-
       this.x = arenaWidth / 2;
       this.y = arenaHeight / 2;
 
@@ -67,6 +63,25 @@
       this.facing = east;
       this.isPenDown = true;
       this.penColor = 'black';
+      this.instructionQueue = [];
+
+      instructionQueues.push(this.instructionQueue);
+
+      //add instruction to create DOM element
+      var that = this;
+
+      var instruction = function() {
+        that.turtle = $('.template').clone();
+        $(that.turtle).removeAttr('style');
+        $(that.turtle).appendTo('body');
+        $(that.turtle).removeClass('template');
+        $(that.turtle).css('background-color', 'green');
+
+        that.setTurtlePosition();
+        that.setTurtleOrientation();  
+      };
+
+      this.instructionQueue.push(instruction);
 
       this.drawTrail = function(x1, y1, x2, y2) {
         canvasContext.strokeStyle = this.penColor;
@@ -93,12 +108,22 @@
 
       this.face = function(direction) {
         var that = this;
-        instructionQueue.push(function() { that.doFace(direction) });
+        this.instructionQueue.push(function() { that.doFace(direction) });
       }
 
       this.move = function() {
         var that = this;
-        instructionQueue.push(function() { that.doMove() });
+        this.instructionQueue.push(function() { that.doMove() });
+      }
+
+      this.penUp = function() {
+        var that = this;
+        this.instructionQueue.push(function() { that.isPenDown = false });
+      }
+
+      this.penDown = function() {
+        var that = this;
+        this.instructionQueue.push(function() { that.isPenDown = true });
       }
 
       this.doFace = function(direction) {
@@ -127,7 +152,8 @@
       };
 
       this.changeColor = function(color) {
-        $(this.turtle).css('background-color', color);
+        var that = this;
+        this.instructionQueue.push(function() { $(that.turtle).css('background-color', color) });
       };
     }
 
@@ -151,19 +177,6 @@
 
       if (canvas.getContext) {
         canvasContext = canvas.getContext("2d");
-      }
-
-      for (i in turtles) {
-        var turtle = turtles[i];
-
-        turtle.turtle = $('.template').clone();
-        $(turtle.turtle).removeAttr('style');
-        $(turtle.turtle).appendTo('body');
-        $(turtle.turtle).removeClass('template');
-        $(turtle.turtle).css('background-color', 'green');
-
-        turtle.setTurtlePosition();
-        turtle.setTurtleOrientation();
       }
 
       setTimeout(processInstruction, instructionDelay);
